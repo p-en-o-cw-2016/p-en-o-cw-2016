@@ -9,7 +9,7 @@ public interface Drone {
     Camera getRightCamera();
     /** The weight in kg. */
     float getWeight();
-    /** The gravity in newtons. */
+    /** The gravity in newtons per kg. */
     float getGravity();
     /** The drag force per unit of speed, in kilograms per second. This drone is highly
         aerodynamic, so the drag force is linear in the speed. */
