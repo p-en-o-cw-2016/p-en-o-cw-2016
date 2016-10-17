@@ -27,7 +27,7 @@ Then, initially, and after each simulation step (i.e., after simulated time is a
 - the left camera image
 - the right camera image
 - float pitch
-- float yaw
+- float roll
 - float currentTime (the amount of simulated time that has elapsed since the start of the simulation)
 
 A camera image is sent as a sequence of width × height (see camera information) pixels, row by row, with the topmost row first, and the leftmost pixel first in each row. A pixel is sent as a sequence of three bytes: red, green, blue.
