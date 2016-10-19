@@ -20,26 +20,43 @@ public interface Drone {
     float getMaxRollRate();
     float getMaxYawRate();
 
-    /** The current pitch (the angle between the direction of view and the horizontal
-        plane), in degrees. Positive pitch means the drone is looking down. */
+    /** The current pitch angle (the angle between the direction of view and the horizontal
+        plane), in degrees. A positive pitch angle means the drone is looking down.
+        This value is always between -90 and 90. */
     float getPitch();
-    /** The current roll (the angle between the line that connects the cameras and the
-        horizontal plane), in degrees. Positive roll means the drone is banking to the right. */
+    /** The current roll angle (the angle between the line that connects the cameras and the
+        horizontal line perpendicular to the direction of view), in degrees.
+        A positive roll angle means the drone is banking to the right.
+        This value is always between -180 and 180. If the absolute value is greater than
+        90, this means the drone is upside down. */
     float getRoll();
     /** The amount of simulated time that has passed since the start of the simulation,
         in seconds. */
     float getCurrentTime();
 
-    /** Sets the pitch rate, in degrees per second. */
+    /** Sets the pitch rate (the rate of rotation around the line that connects the cameras),
+        in degrees per second. At each point in time between this call and the next call of this method,
+        the rate of rotation of the drone around the line that connects the cameras at that point in time
+        will be the given value (except for wind influences).
+        Note that the pitch rate is NOT always equal to the rate of change of the pitch angle.
+        Specifically, the pitch rate is equal to the rate of change of the pitch angle if and only if
+        the roll angle is zero. */
     void setPitchRate(float value);
-    /** Sets the roll rate, in degrees per second. */
+    /** Sets the roll rate, in degrees per second. This equals the rate of change of the roll angle. */
     void setRollRate(float value);
-    /** Sets the yaw rate (rate at which the drone rotates around the vertical axis (parallel to
-        gravity) through the center between the cameras), in degrees per second. Positive
-        means the drone turns to the right. */
+    /** Sets the yaw rate (rate at which the drone rotates around the axis through the center
+        between the cameras, perpendicular to the line that connects the cameras and the direction of view),
+        in degrees per second. A positive yaw rate means the drone turns to the right (from the point of view
+        of someone fixed to the drone and looking in the direction of view, such that the left camera is to
+        their left-hand side and the right camera is to their right-hand side).
+        At each point in time between this call and the next call of this method, the rate of rotation of the
+        drone around the axis through the center of the cameras, perpendicular to the line that connects the cameras
+        and the direction of view at that point in time will be the given value (except for wind influences). */
     void setYawRate(float value);
     /** Sets the thrust (the force exerted by the propellors) in newtons. This force is
         perpendicular to the plane defined by the direction of view and the line connecting
-        the cameras. Positive means upward. */
+        the cameras. Positive means upward (from the point of view of someone fixed to the drone, looking in
+        the direction of view, such that the left camera is to their left-hand side and the right camera is to their
+        right-hand side). */
     void setThrust(float value);
 }
