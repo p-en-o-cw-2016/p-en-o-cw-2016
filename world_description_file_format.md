@@ -5,9 +5,9 @@ World description files must be text files of the following form:
 
 ```c
 horizontalAngleOfView verticalAngleOfView imageWidth imageHeight cameraSeparation weight gravity drag maxThrust maxPitchRate maxRollRate maxYawRate
-windForceXPoints
-windForceYPoints
-windForceZPoints
+windSpeedXPoints
+windSpeedYPoints
+windSpeedZPoints
 windRotationRateAroundXPoints // the wind causes the drone to rotate around an axis through its center parallel to the world X axis at this rate. Positive means clockwise when looking at 1 0 0 from 0 0 0. In degrees per second.
 windRotationRateAroundYPoints
 windRotationRateAroundZPoints
