@@ -26,7 +26,7 @@ The drone is initially at position 0 0 0, has speed 0, pitch 0 and roll 0, and i
 Example file (merely illustrates the format; does not necessarily define a "nice" world):
 
 ```
-120.0 120.0 200 200 0.25 1.0 9.81 0.2 100.0 100.0 100.0 100.0
+120.0 120.0 100 100 0.25 1.0 9.81 0.2 100.0 100.0 100.0 100.0
 1.0 1.0 2.0 0.0 3.0 1.0 4.0 0.0
 1.0 0.0 2.0 1.0 3.0 0.0 4.0 1.0
 1.0 1.0 2.0 0.0 3.0 1.0 4.0 0.0
