@@ -21,7 +21,7 @@ time1 value1 time2 value2 time3 value3 ... timeN valueN
 ```
 These lines must satisfy `0 < time1 < time2  < ... < timeN`. Such a line defines a piecewise linear function which starts at value 0 at time 0, evolves linearly to `value1` at time `time1`, etc. After `timeN` it evolves again to `value1` at time `timeN + time1`, etc.
 
-The drone is initially at position 0 0 0, has speed 0, pitch 0 and roll 0, and is looking towards 1 0 0. All balls have radius 0.5. The radius of the drone is 0.25. The drone touches a ball if the distance between the center of the ball and the point between the camera pinholes is less than the sum of the radii.
+The drone is initially at position 0 0 0, has speed 0, pitch 0 and roll 0, and is looking towards 1 0 0. An arrow from the left camera to the right camera points towards 0 0 1, and the gravity vector points towards 0 -1 0. All balls have radius 0.5. The radius of the drone is 0.25. The drone touches a ball if the distance between the center of the ball and the point between the camera pinholes is less than the sum of the radii.
 
 Example file (merely illustrates the format; does not necessarily define a "nice" world):
 
