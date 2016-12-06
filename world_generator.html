@@ -1,0 +1,233 @@
+<html>
+<head>
+<title>World Generator</title>
+</head>
+<body>
+<h1>World Generator</h1>
+<input type=button value="Generate" onclick="run()" >
+<pre id="world_description_file"></pre>
+<script>
+function run() {
+var horizontalAngleOfView = 120
+var verticalAngleOfView = 120
+var imageWidth = 100
+var imageHeight = 100
+var cameraSeparation = 0.25
+var weight = 1.0
+var gravity = 9.81
+var drag = 0.2
+var maxThrust = 100
+var maxPitchRate = 100
+var maxRollRate = 100
+var maxYawRate = 100
+var description = (horizontalAngleOfView
+  + " " + verticalAngleOfView
+  + " " + imageWidth
+  + " " + imageHeight
+  + " " + cameraSeparation
+  + " " + weight
+  + " " + gravity
+  + " " + drag
+  + " " + maxThrust
+  + " " + maxPitchRate
+  + " " + maxRollRate
+  + " " + maxYawRate
+  + "\n")
+
+function generateSineLine(amplitude, period) {
+    var realAmplitude = (Math.random() * 4 - 2) * amplitude
+    var realPeriod = (Math.random() + 0.5) * period
+    var points = []
+    var numPoints = 10
+    for (var i = 1; i <= numPoints; i++) {
+        var t = realPeriod / numPoints * i
+        var v = Math.sin(i / numPoints * 2 * Math.PI) * realAmplitude
+        points.push(t)
+        points.push(v)
+    }
+    return points
+}
+
+function generateDisturbanceLine(amplitude, duration, rate) {
+    var points = []
+    var nbDisturbances = 5
+    var t = 0
+    for (var i = 0; i < nbDisturbances; i++) {
+        var timeToNext = (Math.random() + 0.5) / rate
+        var realAmplitude = (Math.random() * 4 - 2) * amplitude
+        t += timeToNext
+        points.push(t)
+        points.push(0)
+        t += duration
+        points.push(t)
+        points.push(realAmplitude)
+        t += duration
+        points.push(t)
+        points.push(0)
+    }
+    return points
+}
+
+function computeSumPoints(points1, points2) {
+    var duration1 = points1[points1.length - 2]
+    var duration2 = points2[points2.length - 2]
+    var points1RepeatCount = Math.ceil(duration2 / duration1)
+    var points = []
+    var t = 0
+    var t1 = 0
+    var v1 = 0
+    var t2 = 0
+    var v2 = 0
+    var i1 = 0
+    var i2 = 0
+    var n = 0
+    for (;;) {
+        if (i1 == points1.length) { n++; t1 = 0; i1 = 0 }
+        if (n == points1RepeatCount) break
+        if (i2 == points2.length) { t2 = 0; i2 = 0 }
+        
+        var d1 = points1[i1] - t1
+        var d2 = points2[i2] - t2
+        if (d1 < d2) {
+            t += d1
+            t1 += d1
+            v1 = points1[i1 + 1]
+            t2 += d1
+            v2 = v2 + (points2[i2 + 1] - v2) * d1 / d2
+            i1 += 2
+            points.push(t)
+            points.push(v1 + v2)
+        } else {
+            t += d2
+            t1 += d2
+            v1 = v1 + (points1[i1 + 1] - v1) * d2 / d1
+            t2 += d2
+            v2 = points2[i2 + 1]
+            i2 += 2
+            points.push(t)
+            points.push(v1 + v2)
+        }
+    }
+    return points
+}
+
+function generateWindLine(amplitude, period, disturbanceAmplitude, disturbanceDuration, disturbanceRate) {
+     var sinePoints = generateSineLine(amplitude, period)
+     var disturbancePoints = generateDisturbanceLine(disturbanceAmplitude, disturbanceDuration, disturbanceRate)
+     var points = computeSumPoints(sinePoints, disturbancePoints)
+     return points.join(" ") + "\n"
+}
+
+var windSpeedAmplitude = 1
+var windSpeedPeriod = 60
+var windSpeedDisturbanceAmplitude = 0.2
+var windSpeedDisturbanceDuration = 5
+var windSpeedDisturbanceRate = 5 / 60
+
+var windRotationAmplitude = 4
+var windRotationPeriod = 60
+var windRotationDisturbanceAmplitude = 0.5
+var windRotationDisturbanceDuration = 5
+var windRotationDisturbanceRate = 5 / 60
+
+description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+
+description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+
+var targetBallCount = 10
+var obstacleBallCount = 10
+var droneRadius = 0.25
+var ballRadius = 0.5
+var obstacleBallMinClearance = 6 * droneRadius
+
+function Vector(x, y, z) {
+    this.x = x
+    this.y = y
+    this.z = z
+}
+Vector.prototype.size = function() {
+    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
+}
+Vector.prototype.scale = function(factor) {
+    return new Vector(this.x * factor, this.y * factor, this.z * factor)
+}
+Vector.prototype.minus = function(other) {
+    return new Vector(this.x - other.x, this.y - other.y, this.z - other.z)
+}
+Vector.prototype.distanceTo = function(other) {
+    return this.minus(other).size()
+}
+
+var objects = []
+
+function Drone() {
+    this.position = new Vector(0, 0, 0)
+    this.radius = droneRadius * 6
+}
+Drone.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return this.radius }
+
+function TargetBall(position) {
+    this.position = position
+}
+TargetBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return ballRadius }
+
+function ObstacleBall(position) {
+    this.position = position
+}
+ObstacleBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return otherIsTargetBall ? ballRadius : ballRadius + obstacleBallMinClearance }
+
+objects.push(new Drone())
+
+var slackExponent = 2 // Higher means less expected slack
+var maxSlack = 8 * ballRadius
+
+function produceBalls() {
+    var targetBallsProduced = 0
+    var obstacleBallsProduced = 0
+    for (;;) {
+        if (targetBallsProduced == targetBallCount && obstacleBallsProduced == obstacleBallCount) break
+        var targetBallNext = obstacleBallsProduced == obstacleBallCount || targetBallsProduced < targetBallCount && Math.random() < 0.5
+        var initialDistance = objects.length * (obstacleBallMinClearance + 2 * ballRadius) * 2
+        var xyAngle = Math.random() * 2 * Math.PI
+        var sin_zAngle = Math.random() * 2 - 1
+        var cos_zAngle = Math.sqrt(1 - sin_zAngle * sin_zAngle)
+        var x = initialDistance * cos_zAngle * Math.cos(xyAngle)
+        var y = initialDistance * cos_zAngle * Math.sin(xyAngle)
+        var z = initialDistance * sin_zAngle
+        var center = new Vector(x, y, z)
+        var closestObject = null
+        var leastSlack = Number.POSITIVE_INFINITY
+        for (var i = 0; i < objects.length; i++) {
+            var object = objects[i]
+            var slack = center.distanceTo(object.position) - ballRadius - object.minSpaceFromCenter(targetBallNext)
+            if (slack < leastSlack) {
+                closestObject = object
+                leastSlack = slack
+            }
+        }
+        var vectorFromClosestObject = center.minus(closestObject.position)
+
+        var moveDistance = leastSlack - Math.pow(Math.random(), slackExponent) * maxSlack
+        center = center.minus(vectorFromClosestObject.scale(moveDistance / vectorFromClosestObject.size()))
+        if (targetBallNext) {
+            objects.push(new TargetBall(center))
+            targetBallsProduced++
+            description += "target_ball " + center.x + " " + center.y + " " + center.z + "\n"
+        } else {
+            objects.push(new ObstacleBall(center))
+            obstacleBallsProduced++
+            description += "obstacle_ball " + center.x + " " + center.y + " " + center.z + "\n"
+        }
+    }
+}
+produceBalls()
+
+document.getElementById('world_description_file').textContent = description
+}
+</script>
+</body>
+</html>
