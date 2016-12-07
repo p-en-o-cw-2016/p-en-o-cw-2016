@@ -15,6 +15,8 @@ windRotationRateAroundZPoints
 "obstacle_ball" x y z // zero or more lines; not applicable to Milestones 1.3 and 1.4
 ```
 
+Above, quoted text indicates text that must appear literally rather than be replaced by a number; the quotes themselves must not appear in the world description file. See the example below.
+
 The wind lines are sequences of the form
 ```
 time1 value1 time2 value2 time3 value3 ... timeN valueN
@@ -26,7 +28,7 @@ The drone is initially at position 0 0 0, has speed 0, pitch 0 and roll 0, and i
 Example file (merely illustrates the format; does not necessarily define a "nice" world):
 
 ```
-120.0 120.0 100 100 0.25 1.0 9.81 0.2 100.0 100.0 100.0 100.0
+120.0 120.0 200 200 0.25 1.0 9.81 0.2 25.0 720.0 720.0 720.0
 1.0 1.0 2.0 0.0 3.0 1.0 4.0 0.0
 1.0 0.0 2.0 1.0 3.0 0.0 4.0 1.0
 1.0 1.0 2.0 0.0 3.0 1.0 4.0 0.0
