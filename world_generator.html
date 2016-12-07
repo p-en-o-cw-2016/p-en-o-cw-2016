@@ -6,6 +6,30 @@
 <h1>World Generator</h1>
 <input type=button value="Generate" onclick="run()" >
 <pre id="world_description_file"></pre>
+<h2>Wind Speed X</h2>
+<p>Max acceleration: <span id="windspeedx-accel"></span></p>
+<canvas id="windspeedx" width="600" height="100"></canvas>
+<h2>Wind Speed Y</h2>
+<p>Max acceleration: <span id="windspeedy-accel"></span></p>
+<canvas id="windspeedy" width="600" height="100"></canvas>
+<h2>Wind Speed Z</h2>
+<p>Max acceleration: <span id="windspeedz-accel"></span></p>
+<canvas id="windspeedz" width="600" height="100"></canvas>
+<h2>Wind Rotation X</h2>
+<p>Max acceleration: <span id="windrotx-accel"></span></p>
+<canvas id="windrotx" width="600" height="100"></canvas>
+<h2>Wind Rotation Y</h2>
+<p>Max acceleration: <span id="windroty-accel"></span></p>
+<canvas id="windroty" width="600" height="100"></canvas>
+<h2>Wind Rotation Z</h2>
+<p>Max acceleration: <span id="windrotz-accel"></span></p>
+<canvas id="windrotz" width="600" height="100"></canvas>
+<h2>World Projections</h2>
+<p>Looking towards positive X, positive Z, and negative Y</p>
+<canvas id="world_front" width="400" height="400" style="border:1px solid #000000;"></canvas>
+<canvas id="world_right" width="400" height="400" style="border:1px solid #000000;"></canvas>
+<br/>
+<canvas id="world_down" width="400" height="400" style="border:1px solid #000000;"></canvas>
 <script>
 function run() {
 var horizontalAngleOfView = 120
@@ -33,6 +57,76 @@ var description = (horizontalAngleOfView
   + " " + maxRollRate
   + " " + maxYawRate
   + "\n")
+
+function drawPoints(points, canvas_id) {
+    var maxt = points[points.length - 2]
+    var minv = 0
+    var maxv = 0
+    var t = 0
+    var v = 0
+    var maxaccel = 0
+    for (var i = 0; i < points.length; i+= 2) {
+        minv = Math.min(minv, points[i + 1])
+        maxv = Math.max(maxv, points[i + 1])
+        
+        maxaccel = Math.max(maxaccel, Math.abs((points[i + 1] - v) / (points[i] - t)))
+        t = points[i]
+        v = points[i + 1]
+    }
+    maxaccel = Math.max(maxaccel, Math.abs(points[1] - v) / points[0])
+    document.getElementById(canvas_id + '-accel').textContent = maxaccel.toFixed(2)
+    
+    var axisx = 100
+    var axisy = 20
+    
+    var canvas = document.getElementById(canvas_id)
+    var ctxt = canvas.getContext('2d')
+    ctxt.clearRect(0, 0, canvas.width, canvas.height)
+    
+    // Draw Y axis
+    ctxt.strokeStyle = 'black'
+    ctxt.beginPath()
+    ctxt.moveTo(axisx, canvas.height - axisy)
+    ctxt.lineTo(axisx, 0)
+    ctxt.stroke()
+    ctxt.beginPath()
+    ctxt.moveTo(axisx, 0)
+    ctxt.lineTo(axisx + 5, 10)
+    ctxt.lineTo(axisx - 5, 10)
+    ctxt.closePath()
+    ctxt.fill()
+    
+    ctxt.textAlign = 'right'
+    ctxt.textBaseline = 'top'
+    ctxt.fillText(maxv.toFixed(2), axisx - 7, 0)
+    ctxt.textBaseline = 'bottom'
+    ctxt.fillText(minv.toFixed(2), axisx - 7, canvas.height - axisy)
+    
+    // Draw X axis
+    var zeroy = canvas.height - axisy - (0 - minv) / (maxv - minv) * (canvas.height - axisy)
+    ctxt.beginPath()
+    ctxt.moveTo(axisx, zeroy)
+    ctxt.lineTo(canvas.width, zeroy)
+    ctxt.stroke()
+    ctxt.beginPath()
+    ctxt.moveTo(canvas.width, zeroy)
+    ctxt.lineTo(canvas.width - 10, zeroy + 5)
+    ctxt.lineTo(canvas.width - 10, zeroy - 5)
+    ctxt.closePath()
+    ctxt.fill()
+    
+    ctxt.textAlign = 'right'
+    ctxt.textBaseline = 'top'
+    ctxt.fillText(maxt.toFixed(2), canvas.width, zeroy + 7)
+    
+    ctxt.strokeStyle='blue'
+    ctxt.beginPath()
+    ctxt.moveTo(axisx, zeroy)
+    for (var i = 0; i < points.length; i+=2) {
+        ctxt.lineTo(axisx + points[i] / maxt * (canvas.width - axisx), canvas.height - axisy - (points[i + 1] - minv) / (maxv - minv) * (canvas.height - axisy))
+    }
+    ctxt.stroke()
+}
 
 function generateSineLine(amplitude, period) {
     var realAmplitude = (Math.random() * 4 - 2) * amplitude
@@ -111,10 +205,11 @@ function computeSumPoints(points1, points2) {
     return points
 }
 
-function generateWindLine(amplitude, period, disturbanceAmplitude, disturbanceDuration, disturbanceRate) {
+function generateWindLine(name, amplitude, period, disturbanceAmplitude, disturbanceDuration, disturbanceRate) {
      var sinePoints = generateSineLine(amplitude, period)
      var disturbancePoints = generateDisturbanceLine(disturbanceAmplitude, disturbanceDuration, disturbanceRate)
      var points = computeSumPoints(sinePoints, disturbancePoints)
+     drawPoints(points, name)
      return points.join(" ") + "\n"
 }
 
@@ -130,13 +225,13 @@ var windRotationDisturbanceAmplitude = 0.5
 var windRotationDisturbanceDuration = 5
 var windRotationDisturbanceRate = 5 / 60
 
-description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
-description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
-description += generateWindLine(windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+description += generateWindLine('windspeedx', windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+description += generateWindLine('windspeedy', windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
+description += generateWindLine('windspeedz', windSpeedAmplitude, windSpeedPeriod, windSpeedDisturbanceAmplitude, windSpeedDisturbanceDuration, windSpeedDisturbanceRate)
 
-description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
-description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
-description += generateWindLine(windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+description += generateWindLine('windrotx', windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+description += generateWindLine('windroty', windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
+description += generateWindLine('windrotz', windRotationAmplitude, windRotationPeriod, windRotationDisturbanceAmplitude, windRotationDisturbanceDuration, windRotationDisturbanceRate)
 
 var targetBallCount = 10
 var obstacleBallCount = 10
@@ -237,6 +332,53 @@ for (var i = 0; i < objects.length; i++) {
 }
 
 document.getElementById('world_description_file').textContent = description
+
+var maxxyz = 0
+for (var i = 1; i < objects.length; i++) {
+    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.x))
+    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.y))
+    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.z))
+}
+var viewSize = document.getElementById('world_front').width
+var viewCenter = viewSize / 2
+var scale = viewCenter / (maxxyz + ballRadius)
+
+function drawView(toViewCoords, name) {
+    var canvas = document.getElementById(name)
+    var ctxt = canvas.getContext('2d')
+    
+    var objs = objects.slice(1, objects.length).sort(function(o1, o2) { return toViewCoords(o1).z - toViewCoords(o2).z })
+    
+    ctxt.clearRect(0, 0, canvas.width, canvas.height)
+    for (var i = 0; i < objs.length; i++) {
+        var pos = toViewCoords(objs[i].position)
+        if (pos.z >= 0) {
+            var z = Math.floor(pos.z / (2*maxxyz) * 247)
+            ctxt.fillStyle = objs[i] instanceof TargetBall ? 'rgb('+z+', 255, '+z+')' : 'rgb('+z+', '+z+', '+z+')'
+            ctxt.beginPath()
+            ctxt.arc(viewCenter + pos.x * scale, viewCenter + pos.y * scale, ballRadius * scale, 0, 2*Math.PI)
+            ctxt.fill()
+        }
+    }
+}
+
+var cameraX = -maxxyz
+var cameraY = maxxyz
+var cameraZ = -maxxyz
+
+function toFrontViewCoords(vector) {
+    return new Vector(vector.z, -vector.y, vector.x - cameraX)
+}
+function toRightViewCoords(vector) {
+    return new Vector(-vector.x, -vector.y, vector.z - cameraZ)
+}
+function toDownViewCoords(vector) {
+    return new Vector(vector.z, -vector.x, -(vector.y - cameraY))
+}
+drawView(toFrontViewCoords, 'world_front')
+drawView(toRightViewCoords, 'world_right')
+drawView(toDownViewCoords, 'world_down')
+
 }
 </script>
 </body>
