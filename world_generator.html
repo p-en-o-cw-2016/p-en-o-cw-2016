@@ -10,16 +10,16 @@
 function run() {
 var horizontalAngleOfView = 120
 var verticalAngleOfView = 120
-var imageWidth = 100
-var imageHeight = 100
+var imageWidth = 200
+var imageHeight = 200
 var cameraSeparation = 0.25
 var weight = 1.0
 var gravity = 9.81
 var drag = 0.2
-var maxThrust = 100
-var maxPitchRate = 100
-var maxRollRate = 100
-var maxYawRate = 100
+var maxThrust = 25
+var maxPitchRate = 720
+var maxRollRate = 720
+var maxYawRate = 720
 var description = (horizontalAngleOfView
   + " " + verticalAngleOfView
   + " " + imageWidth
@@ -216,15 +216,25 @@ function produceBalls() {
         if (targetBallNext) {
             objects.push(new TargetBall(center))
             targetBallsProduced++
-            description += "target_ball " + center.x + " " + center.y + " " + center.z + "\n"
         } else {
             objects.push(new ObstacleBall(center))
             obstacleBallsProduced++
-            description += "obstacle_ball " + center.x + " " + center.y + " " + center.z + "\n"
         }
     }
 }
 produceBalls()
+for (var i = 0; i < objects.length; i++) {
+    var object = objects[i]
+    if (object instanceof TargetBall) {
+        description += "target_ball " + object.position.x + " " + object.position.y + " " + object.position.z + "\n"
+    }
+}
+for (var i = 0; i < objects.length; i++) {
+    var object = objects[i]
+    if (object instanceof ObstacleBall) {
+        description += "obstacle_ball " + object.position.x + " " + object.position.y + " " + object.position.z + "\n"
+    }
+}
 
 document.getElementById('world_description_file').textContent = description
 }
