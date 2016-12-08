@@ -33,13 +33,10 @@
 <h2>Wind Rotation Z</h2>
 <p>Max acceleration: <span id="windrotz-accel"></span></p>
 <canvas id="windrotz" width="600" height="100"></canvas>
-<h2>World Projections</h2>
-<p>Looking towards positive X, positive Z, and negative Y</p>
-<canvas id="world_front" width="400" height="400" style="border:1px solid #000000;"></canvas>
-<canvas id="world_right" width="400" height="400" style="border:1px solid #000000;"></canvas>
-<br/>
-<canvas id="world_down" width="400" height="400" style="border:1px solid #000000;"></canvas>
+<h2>World</h2>
+<canvas id="world" width="400" height="400" style="border:1px solid #000000;"></canvas>
 <script>
+var intervalHandle = null
 function run() {
 var horizontalAngleOfView = 120
 var verticalAngleOfView = 120
@@ -343,13 +340,16 @@ for (var i = 0; i < objects.length; i++) {
 
 document.getElementById('world_description_file').textContent = description
 
-var maxxyz = 0
+function sqr(x) { return x * x }
+
+var maxy = 0
+var maxxz2 = 0
 for (var i = 1; i < objects.length; i++) {
-    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.x))
-    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.y))
-    maxxyz = Math.max(maxxyz, Math.abs(objects[i].position.z))
+    maxy = Math.max(maxy, Math.abs(objects[i].position.y))
+    maxxz2 = Math.max(maxxz2, sqr(objects[i].position.x) + sqr(objects[i].position.z))
 }
-var viewSize = document.getElementById('world_front').width
+var maxxyz = Math.max(maxy, Math.sqrt(maxxz2))
+var viewSize = document.getElementById('world').width
 var viewCenter = viewSize / 2
 var scale = viewCenter / (maxxyz + ballRadius)
 
@@ -373,22 +373,23 @@ function drawView(toViewCoords, name) {
     }
 }
 
-var cameraX = -maxxyz
-var cameraY = maxxyz
-var cameraZ = -maxxyz
+var rotationRate = 20 // degrees per second
+var rotationRateRadians = rotationRate / 180 * Math.PI
+var angle = 0 // in radians
 
-function toFrontViewCoords(vector) {
-    return new Vector(vector.z, -vector.y, vector.x - cameraX)
+function toRotatedViewCoords(vector) {
+    return new Vector(vector.z * Math.cos(angle) + vector.x * Math.sin(angle), -vector.y, vector.x * Math.cos(angle) - vector.z * Math.sin(angle) + maxxyz)
 }
-function toRightViewCoords(vector) {
-    return new Vector(-vector.x, -vector.y, vector.z - cameraZ)
+
+var fps = 30
+
+function drawRotatedView() {
+    drawView(toRotatedViewCoords, 'world')
+    angle += rotationRateRadians / fps
 }
-function toDownViewCoords(vector) {
-    return new Vector(vector.z, -vector.x, -(vector.y - cameraY))
-}
-drawView(toFrontViewCoords, 'world_front')
-drawView(toRightViewCoords, 'world_right')
-drawView(toDownViewCoords, 'world_down')
+if (intervalHandle != null)
+    clearInterval(intervalHandle)
+intervalHandle = setInterval(drawRotatedView, 1000/fps)
 
 }
 </script>
