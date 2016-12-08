@@ -357,7 +357,8 @@ function drawView(toViewCoords, name) {
     var canvas = document.getElementById(name)
     var ctxt = canvas.getContext('2d')
     
-    var objs = objects.slice(1, objects.length).sort(function(o1, o2) { return toViewCoords(o1).z - toViewCoords(o2).z })
+    var objs = objects.slice(1, objects.length)
+    objs.sort(function(o1, o2) { return toViewCoords(o2.position).z - toViewCoords(o1.position).z })
     
     ctxt.clearRect(0, 0, canvas.width, canvas.height)
     for (var i = 0; i < objs.length; i++) {
