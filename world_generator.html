@@ -4,6 +4,15 @@
 </head>
 <body>
 <h1>World Generator</h1>
+<h2>Minimum space between balls</h2>
+<p>Note: All generated worlds have at least 1.5m space between obstacle balls.</p>
+<input type=radio name="minspace" id="minspace0" checked=true>0m</br>
+<input type=radio name="minspace" id="minspace3balls">1.5m</br>
+<h2>Slack exponent</h2>
+<p>This is the likelihood of balls being close together. Higher means less expected distance between balls.</p>
+<input type=radio name="slack" id="slackhigh" checked=true>10</br>
+<input type=radio name="slack" id="slacklow">2</br>
+<h2>Generate World</h2>
 <input type=button value="Generate" onclick="run()" >
 <pre id="world_description_file"></pre>
 <h2>Wind Speed X</h2>
@@ -214,7 +223,7 @@ function generateWindLine(name, amplitude, period, disturbanceAmplitude, disturb
 }
 
 var windSpeedAmplitude = 1
-var windSpeedPeriod = 60
+var windSpeedPeriod = 120
 var windSpeedDisturbanceAmplitude = 0.2
 var windSpeedDisturbanceDuration = 5
 var windSpeedDisturbanceRate = 5 / 60
@@ -238,6 +247,7 @@ var obstacleBallCount = 10
 var droneRadius = 0.25
 var ballRadius = 0.5
 var obstacleBallMinClearance = 6 * droneRadius
+var ballMinClearance = document.getElementById('minspace0').checked ? 0 : obstacleBallMinClearance
 
 function Vector(x, y, z) {
     this.x = x
@@ -268,16 +278,16 @@ Drone.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return this.r
 function TargetBall(position) {
     this.position = position
 }
-TargetBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return ballRadius }
+TargetBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return ballRadius + ballMinClearance }
 
 function ObstacleBall(position) {
     this.position = position
 }
-ObstacleBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return otherIsTargetBall ? ballRadius : ballRadius + obstacleBallMinClearance }
+ObstacleBall.prototype.minSpaceFromCenter = function(otherIsTargetBall) { return ballRadius + (otherIsTargetBall ? ballMinClearance : obstacleBallMinClearance) }
 
 objects.push(new Drone())
 
-var slackExponent = 2 // Higher means less expected slack
+var slackExponent = document.getElementById('slackhigh').checked ? 10 : 2 // Higher means less expected slack
 var maxSlack = 8 * ballRadius
 
 function produceBalls() {
