@@ -47,7 +47,10 @@ public interface Drone {
         90, this means the drone is upside down. */
     float getRoll();
     /** The amount of simulated time that has passed since the start of the simulation,
-        in seconds. */
+        in seconds.
+        
+        The value 0 indicates that a new simulation has started and that the autopilot should
+        reset its state. */
     float getCurrentTime();
 
     /** Sets the pitch rate (the rate of rotation around the line that connects the cameras),
