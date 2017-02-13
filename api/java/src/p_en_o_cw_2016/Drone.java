@@ -1,5 +1,10 @@
 package p_en_o_cw_2016;
 
+/** Interface between an autopilot and (real or simulated) drone hardware.
+    In the world coordinate system, the direction of gravity is 0 -1 0.
+    The coordinate system is right-handed: if 0 -1 0 is down and 0 0 -1 is forward,
+    then 1 0 0 is to the right.
+    */
 public interface Drone {
     /** The distance between the cameras, in meters. Note: the (pinholes of the)
         cameras are on the pitch axis, so pitching rotates the cameras but does not
@@ -20,6 +25,17 @@ public interface Drone {
     float getMaxRollRate();
     float getMaxYawRate();
 
+    /** The X coordinate, in world coordinates, of the center between the camera pinholes. */
+    float getX();
+    /** The Y coordinate, in world coordinates, of the center between the camera pinholes. */
+    float getY();
+    /** The Z coordinate, in world coordinates, of the center between the camera pinholes. */
+    float getZ();
+    /** The current heading angle (the angle, in degrees, between the direction of view and the
+        half-plane where X equals zero and Z is less than zero.
+        A positive heading means the drone is heading towards positive X.
+        This value is always between -180 and 180. */
+    float getHeading();
     /** The current pitch angle (the angle between the direction of view and the horizontal
         plane), in degrees. A positive pitch angle means the drone is looking down.
         This value is always between -90 and 90. */

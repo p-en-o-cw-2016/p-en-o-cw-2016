@@ -26,6 +26,10 @@ Then, initially, and after each simulation step (i.e., after simulated time is a
 
 - the left camera image
 - the right camera image
+- float x
+- float y
+- float z
+- float heading
 - float pitch
 - float roll
 - float currentTime (the amount of simulated time that has elapsed since the start of the simulation)
