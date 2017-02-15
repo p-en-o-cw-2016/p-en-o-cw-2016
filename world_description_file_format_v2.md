@@ -7,7 +7,7 @@ This is a binary format. All multi-byte primitives are written in big-endian byt
 
 ```
 WorldDescriptionFile_v2 {
-    u1 magic[4] = {'W','D','F','F'};
+    u1 magic[4] = {'W','D','F','F'}; // The first four bytes of the file are the ASCII characters 'W', 'D', 'F', 'F'.
     u1 version = 2;
     float horizontalAngleOfView;
     float verticalAngleOfView;
