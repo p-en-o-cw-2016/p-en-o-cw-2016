@@ -31,8 +31,8 @@ public interface Drone {
     float getY();
     /** The Z coordinate, in world coordinates, of the center between the camera pinholes. */
     float getZ();
-    /** The current heading angle (the angle, in degrees, between the direction of view and the
-        half-plane where X equals zero and Z is less than zero.
+    /** The current heading angle (the angle, in degrees, between the cross product of
+        the direction of view and positive Y, and positive X).
         A positive heading means the drone is heading towards positive X.
         This value is always between -180 and 180. */
     float getHeading();
