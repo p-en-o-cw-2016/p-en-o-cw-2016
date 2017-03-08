@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>World Generator v2</title>
+</head>
+<body>
+<h1>World Generator v2</h1>
+<p>Tested on Google Chrome; may not work on other browsers.</p>
+<script>
+var horizontalAngleOfView = 120.0
+var verticalAngleOfView = 120.0
+var imageWidth = 200
+var imageHeight = 200
+var cameraSeparation = 0.25
+var weight = 1.0
+var gravity = 9.81
+var drag = 0.2
+var maxThrust = 25.0
+var maxPitchRate = 720.0
+var maxRollRate = 720.0
+var maxYawRate = 720.0
+var windSpeedXPoints = [1.0, 1.0, 2.0, 0.0, 3.0, 1.0, 4.0, 0.0]
+var windSpeedYPoints = [1.0, 0.0, 2.0, 1.0, 3.0, 0.0, 4.0, 1.0]
+var windSpeedZPoints = [1.0, 1.0, 2.0, 0.0, 3.0, 1.0, 4.0, 0.0]
+var windRotationRateAroundXPoints = [1.0, 0.0, 2.0, 1.0, 3.0, 0.0, 4.0, 1.0]
+var windRotationRateAroundYPoints = [1.0, 1.0, 2.0, 0.0, 3.0, 1.0, 4.0, 0.0]
+var windRotationRateAroundZPoints = [1.0, 0.0, 2.0, 1.0, 3.0, 0.0, 4.0, 1.0]
+
+var objects = [{
+  vertices: [[0.0, 0.0, -5.0], [0.0, 1.0, -5.0], [1.0, 0.0, -5.0], [0.0, 0.0, -6.0]],
+  faces: [
+    {vertices: [0, 1, 2], color: [0, 255, 0]}, // Front face
+    {vertices: [3, 1, 0], color: [0, 254, 0]}, // Left face
+    {vertices: [0, 2, 3], color: [0, 253, 0]}, // Bottom face
+    {vertices: [1, 3, 2], color: [0, 252, 0]}, // Right face
+  ]
+},
+{
+  vertices: [[0.0, 0.0, 6.0], [0.0, 1.0, 6.0], [1.0, 0.0, 6.0], [0.0, 0.0, 5.0]],
+  faces: [
+    {vertices: [0, 1, 2], color: [0, 0, 255]}, // Front face
+    {vertices: [3, 1, 0], color: [0, 0, 254]}, // Left face
+    {vertices: [0, 2, 3], color: [0, 0, 253]}, // Bottom face
+    {vertices: [1, 3, 2], color: [0, 0, 252]}, // Right face
+  ]
+}
+]
+
+function Field(type, size, value) {
+    this.type = type
+    this.size = size
+    this.value = value
+}
+function u1(value) { return new Field("Uint8", 1, typeof value == "string" ? value.charCodeAt(0) : value) }
+function float_(value) { return new Field("Float32", 4, value) }
+function u2(value) { return new Field("Uint16", 2, value) }
+function points(values) { return [u2(values.length / 2)].concat(values.map(float_)) }
+function object_(obj) {
+  return [
+    u2(obj.vertices.length),
+    obj.vertices.map(v => v.map(float_)),
+    u2(obj.faces.length),
+    obj.faces.map(f => f.vertices.map(u2).concat(f.color.map(u1)))
+  ]
+}
+
+var worldDescription = [
+    ['W','D','F','F'].map(u1),
+    u1(2),
+    float_(horizontalAngleOfView),
+    float_(verticalAngleOfView),
+    u2(imageWidth),
+    u2(imageHeight),
+    float_(cameraSeparation),
+    float_(weight),
+    float_(gravity),
+    float_(drag),
+    float_(maxThrust),
+    float_(maxPitchRate),
+    float_(maxRollRate),
+    float_(maxYawRate),
+    points(windSpeedXPoints),
+    points(windSpeedYPoints),
+    points(windSpeedZPoints),
+    points(windRotationRateAroundXPoints),
+    points(windRotationRateAroundYPoints),
+    points(windRotationRateAroundZPoints),
+    u2(objects.length),
+    objects.map(object_)
+]
+
+function sizeOf(data) {
+    if (data instanceof Field) {
+        return data.size
+    } else {
+        return data.reduce((sum, f) => sum + sizeOf(f), 0)
+    }
+}
+
+function write(dataView, data) {
+    var offset = 0
+    function iter(data) {
+        if (data instanceof Field) {
+            dataView['set' + data.type](offset, data.value)
+            offset += data.size
+        } else {
+            data.forEach(iter)
+        }
+    }
+    iter(data)
+}
+
+var size = sizeOf(worldDescription)
+
+var buffer = new ArrayBuffer(size)
+var dataView = new DataView(buffer)
+
+write(dataView, worldDescription)
+
+var blob = new Blob([buffer], {type: 'application/octet-stream'})
+var url = URL.createObjectURL(blob)
+
+document.write('<p><a href="'+url+'" download="example.wdf">Download the world description file</a></p>')
+</script>
+</body>
+</html>
